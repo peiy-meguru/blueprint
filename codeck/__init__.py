@@ -1,5 +1,6 @@
 """
 Codeck - A visual blueprint programming engine built with PySide6.
+Designed for HOI4 MOD creation.
 """
 
 from .store.node import NodeStore, regNode
@@ -7,6 +8,7 @@ from .store.connection import ConnectionStore
 from .store.variable import VariableStore
 from .store.stage import StageStore
 from .store.ui import UIStore
+from .store.settings import SettingsStore, tr
 from .code.compiler import CodeCompiler
 from .utils.consts import (
     STANDARD_PIN_EXEC_IN,
@@ -20,8 +22,10 @@ __all__ = [
     'VariableStore',
     'StageStore',
     'UIStore',
+    'SettingsStore',
     'CodeCompiler',
     'regNode',
+    'tr',
     'STANDARD_PIN_EXEC_IN',
     'STANDARD_PIN_EXEC_OUT',
     'variableTypes',

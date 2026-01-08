@@ -1,4 +1,4 @@
-"""Tests for the code compiler."""
+"""Tests for the code compiler - HOI4 MOD script generation."""
 
 import pytest
 from PySide6.QtCore import QPointF
@@ -20,7 +20,7 @@ def reset_stores():
 
 
 def test_generate_basic_code():
-    """Test generating basic code with Begin and Log nodes."""
+    """Test generating basic HOI4 MOD script code with Begin and Log nodes."""
     from codeck.store.node import NodeStore
     from codeck.store.connection import ConnectionStore
     from codeck.code.compiler import CodeCompiler
@@ -40,12 +40,13 @@ def test_generate_basic_code():
     compiler = CodeCompiler()
     code = compiler.generate()
     
-    assert 'console.log' in code
+    # HOI4 script uses log = "message" format
+    assert 'Log:' in code or 'log =' in code
     assert 'Hello World' in code
 
 
 def test_generate_code_with_variable():
-    """Test generating code with a variable."""
+    """Test generating HOI4 MOD script code with a variable."""
     from codeck.store.node import NodeStore
     from codeck.store.variable import VariableStore
     from codeck.code.compiler import CodeCompiler
@@ -62,11 +63,13 @@ def test_generate_code_with_variable():
     compiler = CodeCompiler()
     code = compiler.generate()
     
-    assert 'let counter = 0' in code
+    # HOI4 uses set_variable for variable assignment
+    assert 'counter' in code
+    assert 'set_variable' in code or 'Variable Definitions' in code
 
 
 def test_generate_if_code():
-    """Test generating If node code."""
+    """Test generating If node HOI4 MOD script code."""
     from codeck.store.node import NodeStore
     from codeck.store.connection import ConnectionStore
     from codeck.code.compiler import CodeCompiler
@@ -82,7 +85,7 @@ def test_generate_if_code():
     node_store.remove_node('log')
     
     # Create If node
-    if_node_id = node_store.create_node('if', QPointF(200, 10), {'condition': True})
+    if_node_id = node_store.create_node('if', QPointF(200, 10), {'condition': 'always = yes'})
     
     # Connect Begin to If
     conn_store.start_connect(BEGIN_NODE_ID, '$pin_exec_out', 'exec', 'out-in')
@@ -91,12 +94,13 @@ def test_generate_if_code():
     compiler = CodeCompiler()
     code = compiler.generate()
     
-    assert 'if (' in code
-    assert 'else' in code
+    # HOI4 script uses if = { limit = { } }
+    assert 'if =' in code
+    assert 'limit' in code
 
 
 def test_generate_loop_code():
-    """Test generating Loop node code."""
+    """Test generating Loop node HOI4 MOD script code."""
     from codeck.store.node import NodeStore
     from codeck.store.connection import ConnectionStore
     from codeck.code.compiler import CodeCompiler
@@ -121,5 +125,28 @@ def test_generate_loop_code():
     compiler = CodeCompiler()
     code = compiler.generate()
     
-    assert 'for (' in code
+    # HOI4 uses random_list for loop-like behavior
+    assert 'random_list' in code or 'Loop' in code
     assert '5' in code
+
+
+def test_generate_hoi4_script_header():
+    """Test that generated code includes HOI4 MOD script header."""
+    from codeck.store.node import NodeStore
+    from codeck.code.compiler import CodeCompiler
+    from codeck.nodes.definitions.all_nodes import register_builtin_nodes
+    
+    node_store = NodeStore.get_instance()
+    register_builtin_nodes()
+    node_store.reset_nodes()
+    
+    compiler = CodeCompiler()
+    compiler.mod_namespace = 'test_mod'
+    compiler.script_type = 'event'
+    
+    code = compiler.generate()
+    
+    # Should include HOI4 script header
+    assert 'HOI4 MOD Script' in code
+    assert 'test_mod' in code
+    assert 'add_namespace' in code

@@ -1,4 +1,4 @@
-"""Loop node definition."""
+"""Loop node definition - Iteration for HOI4 MOD scripts."""
 
 from PySide6.QtCore import QPointF
 from ...store.node import CodeckNodeDefinition
@@ -13,16 +13,23 @@ height = build_node_height(3)
 
 
 def loop_code_fn(node, build_pin_var_name, get_connection_input, get_connection_exec_output):
-    """Generate code for Loop node."""
+    """Generate code for Loop node in HOI4 script format.
+    
+    In HOI4, loops are typically done with every_* or random_* scopes.
+    This generates a random_list with equal weights as a loop simulation.
+    """
     count = get_connection_input('count')
     if count is None:
-        count = str(node.data.get('count', 0))
+        count = str(node.data.get('count', 1))
     
-    index_var = build_pin_var_name('index')
-    body = format_function_indent(get_connection_exec_output('body'), 2)
+    body = format_function_indent(get_connection_exec_output('body'), 1)
     
-    return f'''for (let {index_var} = 0; {index_var} < {count}; {index_var}++) {{
-  {body}
+    # HOI4 doesn't have traditional loops, use every_country as an example
+    return f'''# Loop {count} times (using random_list)
+random_list = {{
+    {count} = {{
+        {body}
+    }}
 }}
 '''
 

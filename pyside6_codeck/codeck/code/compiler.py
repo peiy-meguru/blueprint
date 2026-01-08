@@ -263,7 +263,11 @@ class CodeCompiler:
             return None
         
         if len(exec_connections) > 1:
-            raise ValueError(f'Node {node_id} has multiple exec connections from pin {pin_name}')
+            raise ValueError(
+                f'Node {node_id} has multiple exec connections from pin {pin_name}. '
+                f'Each execution pin can only have one outgoing connection. '
+                f'Please remove extra connections to resolve this issue.'
+            )
         
         return self.node_map.get(exec_connections[0].to_node_id)
     

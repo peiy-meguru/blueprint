@@ -4,8 +4,11 @@ import uuid
 
 
 def generate_node_id() -> str:
-    """Generate a unique node ID."""
-    return str(uuid.uuid4())[:8]
+    """Generate a unique node ID.
+    
+    Uses a full UUID4 to ensure uniqueness even in large blueprints.
+    """
+    return str(uuid.uuid4())
 
 
 def format_function_indent(code: str | None, indent: int = 2) -> str:

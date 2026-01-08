@@ -98,7 +98,7 @@ class CreateVariableDialog(QWidget):
             return
         
         # Validate name starts with letter or underscore
-        if not name[0].isalpha() and name[0] != '_':
+        if len(name) > 0 and not name[0].isalpha() and name[0] != '_':
             QMessageBox.warning(self, 'Error', 'Variable name must start with a letter or underscore')
             return
         

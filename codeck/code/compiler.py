@@ -4,6 +4,7 @@ from typing import Optional
 from ..store.node import NodeStore, CodeckNode, CodeckNodeDefinition, CodeImportPrepare, CodeFunctionPrepare
 from ..store.connection import ConnectionStore, ConnectInfo
 from ..store.variable import VariableStore
+from ..store.settings import tr
 from ..utils.consts import STANDARD_PIN_EXEC_OUT
 from ..utils.string_helper import format_function_indent
 
@@ -13,6 +14,7 @@ class CodeCompiler:
     
     def __init__(self):
         self.prepares: list = []
+        self._prepare_ids: set = set()  # For efficient duplicate checking
         self.script_type = 'event'  # 'event', 'decision', 'national_focus', 'idea'
         self.mod_namespace = 'my_mod'
         self.print_comment = True
@@ -184,7 +186,14 @@ class CodeCompiler:
         return prepare_code
     
     def _find_begin(self) -> CodeckNode:
-        """Find the Begin node."""
+        """Find the Begin node.
+        
+        Returns:
+            The Begin node
+            
+        Raises:
+            ValueError: If no Begin node found or multiple Begin nodes found
+        """
         begin_nodes = [
             node for node in self.node_map.values()
             if self.node_definition.get(node.name, None) and 
@@ -192,15 +201,26 @@ class CodeCompiler:
         ]
         
         if not begin_nodes:
-            raise ValueError('No Begin node found')
+            raise ValueError(tr('no_begin_node'))
         
         if len(begin_nodes) > 1:
-            raise ValueError('Multiple Begin nodes found')
+            raise ValueError(tr('multiple_begin_nodes'))
         
         return begin_nodes[0]
     
     def _get_exec_next(self, node_id: str, pin_name: str = STANDARD_PIN_EXEC_OUT) -> Optional[CodeckNode]:
-        """Get the next node connected to an exec pin."""
+        """Get the next node connected to an exec pin.
+        
+        Args:
+            node_id: The source node ID
+            pin_name: The exec pin name (default: standard exec out)
+            
+        Returns:
+            The next node or None if not connected
+            
+        Raises:
+            ValueError: If multiple connections found from the same exec pin
+        """
         node = self.node_map.get(node_id)
         if not node:
             return None
@@ -214,8 +234,10 @@ class CodeCompiler:
             return None
         
         if len(exec_connections) > 1:
+            node_def = self.node_definition.get(node.name)
+            node_label = node_def.label if node_def else node.name
             raise ValueError(
-                f'Node {node_id} has multiple exec connections from pin {pin_name}. '
+                f'Node "{node_label}" (ID: {node_id}) has multiple exec connections from pin "{pin_name}". '
                 f'Each execution pin can only have one outgoing connection. '
                 f'Please remove extra connections to resolve this issue.'
             )
@@ -223,6 +245,15 @@ class CodeCompiler:
         return self.node_map.get(exec_connections[0].to_node_id)
     
     def _collect_prepare(self, node_def: CodeckNodeDefinition) -> None:
-        """Collect prepare items from a node definition."""
+        """Collect prepare items from a node definition.
+        
+        Args:
+            node_def: The node definition to collect prepare items from
+        """
         if node_def.prepare:
-            self.prepares.extend(node_def.prepare)
+            for prep in node_def.prepare:
+                # Use id() for efficient duplicate checking
+                prep_id = id(prep)
+                if prep_id not in self._prepare_ids:
+                    self._prepare_ids.add(prep_id)
+                    self.prepares.append(prep)

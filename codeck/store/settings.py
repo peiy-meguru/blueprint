@@ -8,6 +8,10 @@ from typing import Literal, Optional
 from PySide6.QtCore import QObject, Signal
 
 
+# Supported languages and themes
+SUPPORTED_LANGUAGES = ('zh_CN', 'en_US')
+SUPPORTED_THEMES = ('dark', 'light')
+
 Language = Literal['zh_CN', 'en_US']
 Theme = Literal['dark', 'light']
 
@@ -93,23 +97,35 @@ class SettingsStore(QObject):
             with open(self.settings_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            self._settings.language = data.get('language', 'zh_CN')
-            self._settings.theme = data.get('theme', 'dark')
+            # Validate and load language
+            language = data.get('language', 'zh_CN')
+            if language not in SUPPORTED_LANGUAGES:
+                language = 'zh_CN'
+            self._settings.language = language
+            
+            # Validate and load theme
+            theme = data.get('theme', 'dark')
+            if theme not in SUPPORTED_THEMES:
+                theme = 'dark'
+            self._settings.theme = theme
+            
             self._settings.last_project_path = data.get('last_project_path', '')
             
-            # Load recent projects
+            # Load recent projects with validation
             recent = data.get('recent_projects', [])
-            self._settings.recent_projects = [
-                RecentProject(
-                    name=p.get('name', ''),
-                    path=p.get('path', ''),
-                    image_path=p.get('image_path'),
-                    description=p.get('description', ''),
-                    last_opened=p.get('last_opened', '')
-                )
-                for p in recent
-            ]
-        except (json.JSONDecodeError, IOError) as e:
+            self._settings.recent_projects = []
+            for p in recent:
+                if isinstance(p, dict) and p.get('path'):
+                    self._settings.recent_projects.append(
+                        RecentProject(
+                            name=p.get('name', ''),
+                            path=p.get('path', ''),
+                            image_path=p.get('image_path'),
+                            description=p.get('description', ''),
+                            last_opened=p.get('last_opened', '')
+                        )
+                    )
+        except (json.JSONDecodeError, IOError, TypeError) as e:
             print(f'Warning: Failed to load settings: {e}')
     
     def _save_settings(self) -> None:

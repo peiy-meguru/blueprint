@@ -111,7 +111,8 @@ function useStageEventHandler() {
 
   const handleUpdatePos = useMemoizedFn(
     (e: Konva.KonvaEventObject<DragEvent>) => {
-      if (e.target !== e.target.getStage()) {
+      const stage = e.target.getStage();
+      if (e.target !== stage) {
         return;
       }
       setPosition(e.target.position());

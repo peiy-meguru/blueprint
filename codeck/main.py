@@ -492,6 +492,40 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     
+    # Set up font with Chinese/Unicode support
+    from PySide6.QtGui import QFont, QFontDatabase
+    
+    # Try to use fonts that support Chinese characters
+    # Priority: Noto Sans CJK > Microsoft YaHei > SimHei > WenQuanYi > System default
+    chinese_fonts = [
+        'Noto Sans CJK SC',
+        'Noto Sans SC', 
+        'Microsoft YaHei',
+        'SimHei',
+        'WenQuanYi Micro Hei',
+        'WenQuanYi Zen Hei',
+        'Source Han Sans CN',
+        'PingFang SC',
+        'Hiragino Sans GB',
+    ]
+    
+    # Find available font with Chinese support
+    available_families = QFontDatabase.families()
+    selected_font = None
+    for font_name in chinese_fonts:
+        if font_name in available_families:
+            selected_font = font_name
+            break
+    
+    if selected_font:
+        font = QFont(selected_font, 10)
+        app.setFont(font)
+    else:
+        # Fall back to default font but ensure it can handle Unicode
+        font = app.font()
+        font.setPointSize(10)
+        app.setFont(font)
+    
     window = MainWindow()
     window.show()
     

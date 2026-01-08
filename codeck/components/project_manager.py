@@ -11,8 +11,20 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtGui import QPixmap, QFont, QColor, QPalette
 
-from ..store.settings import SettingsStore, RecentProject, tr
+from ..store.settings import SettingsStore, RecentProject, tr, get_font_family
 
+
+def _get_font(size: int, bold: bool = False) -> QFont:
+    """Get a font with Chinese support at the specified size."""
+    font_family = get_font_family()
+    if font_family:
+        font = QFont(font_family, size)
+    else:
+        font = QFont()
+        font.setPointSize(size)
+    if bold:
+        font.setBold(True)
+    return font
 
 class ProjectCard(QFrame):
     """A card widget displaying a recent project."""
@@ -61,7 +73,7 @@ class ProjectCard(QFrame):
         
         # Name
         name_label = QLabel(project.name or os.path.basename(project.path))
-        name_label.setFont(QFont('Arial', 12, QFont.Bold))
+        name_label.setFont(_get_font(12, bold=True))
         name_label.setWordWrap(True)
         info_layout.addWidget(name_label)
         
@@ -260,7 +272,7 @@ class ProjectManager(QWidget):
         
         # Title
         self.title_label = QLabel(tr('app_title'))
-        self.title_label.setFont(QFont('Arial', 24, QFont.Bold))
+        self.title_label.setFont(_get_font(24, bold=True))
         self.title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.title_label)
         
@@ -271,19 +283,19 @@ class ProjectManager(QWidget):
         
         self.new_btn = QPushButton(tr('new_project'))
         self.new_btn.setFixedSize(150, 50)
-        self.new_btn.setFont(QFont('Arial', 12))
+        self.new_btn.setFont(_get_font(12))
         self.new_btn.clicked.connect(self._on_new_project)
         action_layout.addWidget(self.new_btn)
         
         self.open_btn = QPushButton(tr('open_project'))
         self.open_btn.setFixedSize(150, 50)
-        self.open_btn.setFont(QFont('Arial', 12))
+        self.open_btn.setFont(_get_font(12))
         self.open_btn.clicked.connect(self._on_open_project)
         action_layout.addWidget(self.open_btn)
         
         self.settings_btn = QPushButton(tr('settings'))
         self.settings_btn.setFixedSize(100, 50)
-        self.settings_btn.setFont(QFont('Arial', 12))
+        self.settings_btn.setFont(_get_font(12))
         self.settings_btn.clicked.connect(self._on_settings)
         action_layout.addWidget(self.settings_btn)
         
@@ -292,7 +304,7 @@ class ProjectManager(QWidget):
         
         # Recent projects section
         self.recent_label = QLabel(tr('recent_projects'))
-        self.recent_label.setFont(QFont('Arial', 14, QFont.Bold))
+        self.recent_label.setFont(_get_font(14, bold=True))
         layout.addWidget(self.recent_label)
         
         # Horizontal scroll area for recent projects

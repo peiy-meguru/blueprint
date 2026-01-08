@@ -323,3 +323,33 @@ def tr(key: str) -> str:
     settings = SettingsStore.get_instance()
     lang = settings.language
     return TRANSLATIONS.get(lang, TRANSLATIONS['en_US']).get(key, key)
+
+
+def get_font_family() -> str:
+    """Get a font family that supports Chinese characters.
+    
+    Returns:
+        Font family name that supports Chinese, or empty string for system default.
+    """
+    from PySide6.QtGui import QFontDatabase
+    
+    # Priority list of fonts with Chinese support
+    chinese_fonts = [
+        'Noto Sans CJK SC',
+        'Noto Sans SC',
+        'Microsoft YaHei',
+        'SimHei',
+        'WenQuanYi Micro Hei',
+        'WenQuanYi Zen Hei',
+        'Source Han Sans CN',
+        'PingFang SC',
+        'Hiragino Sans GB',
+        'Arial Unicode MS',
+    ]
+    
+    available_families = QFontDatabase.families()
+    for font_name in chinese_fonts:
+        if font_name in available_families:
+            return font_name
+    
+    return ''  # Use system default

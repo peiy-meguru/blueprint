@@ -73,7 +73,7 @@ function useStageEventHandler() {
 
   const handleWheel = useMemoizedFn((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-    const stage = e.target as Konva.Stage;
+    const stage = e.target.getStage();
     if (!stage) {
       return;
     }
@@ -90,7 +90,7 @@ function useStageEventHandler() {
     };
 
     // how to scale? Zoom in? Or zoom out?
-    let direction = e.evt.deltaY > 0 ? 1 : -1;
+    let direction = e.evt.deltaY > 0 ? -1 : 1;
 
     // when we zoom on trackpad, e.evt.ctrlKey is true
     // in that case lets revert direction
@@ -111,6 +111,9 @@ function useStageEventHandler() {
 
   const handleUpdatePos = useMemoizedFn(
     (e: Konva.KonvaEventObject<DragEvent>) => {
+      if (e.target !== e.target.getStage()) {
+        return;
+      }
       setPosition(e.target.position());
     }
   );

@@ -13,6 +13,7 @@ from PySide6.QtCore import Qt, Signal
 from ..store.node import NodeStore
 from ..store.connection import ConnectionStore
 from ..store.variable import VariableStore, VariableItem
+from ..store.settings import SettingsStore, tr
 from ..utils.consts import variableTypes
 from ..code.compiler import CodeCompiler
 
@@ -35,7 +36,7 @@ class VariableWidget(QWidget):
         info_layout.addWidget(QLabel(f'({variable.type})'))
         info_layout.addStretch()
         
-        delete_btn = QPushButton('Delete')
+        delete_btn = QPushButton(tr('delete'))
         delete_btn.clicked.connect(self._on_delete)
         info_layout.addWidget(delete_btn)
         
@@ -43,7 +44,7 @@ class VariableWidget(QWidget):
         
         # Default value
         if variable.default_value is not None:
-            layout.addWidget(QLabel(f'Default: {variable.default_value}'))
+            layout.addWidget(QLabel(f'{tr("default")}: {variable.default_value}'))
     
     def _on_delete(self):
         """Handle delete button click."""
@@ -63,15 +64,15 @@ class CreateVariableDialog(QWidget):
         
         # Name input
         name_layout = QHBoxLayout()
-        name_layout.addWidget(QLabel('Name:'))
+        name_layout.addWidget(QLabel(f'{tr("name")}:'))
         self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText('Variable name')
+        self.name_input.setPlaceholderText(tr('variable_name_placeholder'))
         name_layout.addWidget(self.name_input)
         layout.addLayout(name_layout)
         
         # Type selector
         type_layout = QHBoxLayout()
-        type_layout.addWidget(QLabel('Type:'))
+        type_layout.addWidget(QLabel(f'{tr("type")}:'))
         self.type_combo = QComboBox()
         self.type_combo.addItems(variableTypes)
         type_layout.addWidget(self.type_combo)
@@ -79,14 +80,14 @@ class CreateVariableDialog(QWidget):
         
         # Default value
         default_layout = QHBoxLayout()
-        default_layout.addWidget(QLabel('Default:'))
+        default_layout.addWidget(QLabel(f'{tr("default")}:'))
         self.default_input = QLineEdit()
-        self.default_input.setPlaceholderText('(optional)')
+        self.default_input.setPlaceholderText(tr('default_optional'))
         default_layout.addWidget(self.default_input)
         layout.addLayout(default_layout)
         
         # Create button
-        create_btn = QPushButton('Create Variable')
+        create_btn = QPushButton(tr('create_variable'))
         create_btn.clicked.connect(self._on_create)
         layout.addWidget(create_btn)
     
@@ -94,12 +95,12 @@ class CreateVariableDialog(QWidget):
         """Handle create button click."""
         name = self.name_input.text().strip()
         if not name:
-            QMessageBox.warning(self, 'Error', 'Variable name is required')
+            QMessageBox.warning(self, tr('error'), tr('variable_name_required'))
             return
         
         # Validate name starts with letter or underscore
         if len(name) > 0 and not name[0].isalpha() and name[0] != '_':
-            QMessageBox.warning(self, 'Error', 'Variable name must start with a letter or underscore')
+            QMessageBox.warning(self, tr('error'), tr('variable_name_invalid'))
             return
         
         var_type = self.type_combo.currentText()
@@ -126,7 +127,7 @@ class CreateVariableDialog(QWidget):
             self.default_input.clear()
             self.created.emit()
         else:
-            QMessageBox.warning(self, 'Error', f'Variable "{name}" already exists')
+            QMessageBox.warning(self, tr('error'), f'{tr("variable_exists")}: {name}')
 
 
 class BuildConfigWidget(QWidget):
@@ -139,14 +140,14 @@ class BuildConfigWidget(QWidget):
         layout.setContentsMargins(5, 5, 5, 5)
         
         # Script type selection
-        script_group = QGroupBox('Script Type')
+        script_group = QGroupBox(tr('script_type'))
         script_layout = QHBoxLayout(script_group)
         self.script_group = QButtonGroup(self)
         
-        self.event_radio = QRadioButton('Event')
+        self.event_radio = QRadioButton(tr('event'))
         self.event_radio.setChecked(True)
-        self.decision_radio = QRadioButton('Decision')
-        self.focus_radio = QRadioButton('Focus')
+        self.decision_radio = QRadioButton(tr('decision'))
+        self.focus_radio = QRadioButton(tr('focus'))
         
         self.script_group.addButton(self.event_radio)
         self.script_group.addButton(self.decision_radio)
@@ -158,13 +159,13 @@ class BuildConfigWidget(QWidget):
         
         # Namespace input
         namespace_layout = QHBoxLayout()
-        namespace_layout.addWidget(QLabel('Namespace:'))
+        namespace_layout.addWidget(QLabel(f'{tr("namespace")}:'))
         self.namespace_input = QLineEdit('my_mod')
         namespace_layout.addWidget(self.namespace_input)
         layout.addLayout(namespace_layout)
         
         # Pack button
-        pack_btn = QPushButton('Export MOD Script')
+        pack_btn = QPushButton(tr('export_mod_script'))
         pack_btn.clicked.connect(self._on_pack)
         layout.addWidget(pack_btn)
     
@@ -188,7 +189,7 @@ class BuildConfigWidget(QWidget):
             # Save to file
             file_name, _ = QFileDialog.getSaveFileName(
                 self,
-                'Save MOD Script',
+                tr('export_mod_script'),
                 f'{compiler.mod_namespace}_{compiler.script_type}.txt',
                 'HOI4 Script Files (*.txt);;All Files (*)'
             )
@@ -196,9 +197,9 @@ class BuildConfigWidget(QWidget):
             if file_name:
                 with open(file_name, 'w', encoding='utf-8') as f:
                     f.write(code)
-                QMessageBox.information(self, 'Success', f'MOD script saved to {file_name}')
+                QMessageBox.information(self, tr('success'), f'{tr("file_saved_to")} {file_name}')
         except Exception as e:
-            QMessageBox.warning(self, 'Error', f'Failed to generate MOD script: {e}')
+            QMessageBox.warning(self, tr('error'), f'{tr("generate_error")}: {e}')
 
 
 class ManagerPanel(QWidget):
@@ -214,40 +215,40 @@ class ManagerPanel(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         
         # File operations
-        file_group = QGroupBox('File')
-        file_layout = QVBoxLayout(file_group)
+        self.file_group = QGroupBox(tr('file'))
+        file_layout = QVBoxLayout(self.file_group)
         
         file_buttons = QHBoxLayout()
         
-        open_btn = QPushButton('Open')
-        open_btn.clicked.connect(self._on_open)
-        file_buttons.addWidget(open_btn)
+        self.open_btn = QPushButton(tr('open'))
+        self.open_btn.clicked.connect(self._on_open)
+        file_buttons.addWidget(self.open_btn)
         
-        save_btn = QPushButton('Save')
-        save_btn.clicked.connect(self._on_save)
-        file_buttons.addWidget(save_btn)
+        self.save_btn = QPushButton(tr('save'))
+        self.save_btn.clicked.connect(self._on_save)
+        file_buttons.addWidget(self.save_btn)
         
-        save_as_btn = QPushButton('Save As')
-        save_as_btn.clicked.connect(self._on_save_as)
-        file_buttons.addWidget(save_as_btn)
+        self.save_as_btn = QPushButton(tr('save_as'))
+        self.save_as_btn.clicked.connect(self._on_save_as)
+        file_buttons.addWidget(self.save_as_btn)
         
         file_layout.addLayout(file_buttons)
         
-        self.file_label = QLabel('Current: Local Storage')
+        self.file_label = QLabel(f'{tr("current_file")}: {tr("local_storage")}')
         file_layout.addWidget(self.file_label)
         
-        layout.addWidget(file_group)
+        layout.addWidget(self.file_group)
         
         # Actions
         actions_layout = QHBoxLayout()
         
-        reset_btn = QPushButton('Reset')
-        reset_btn.clicked.connect(self._on_reset)
-        actions_layout.addWidget(reset_btn)
+        self.reset_btn = QPushButton(tr('reset'))
+        self.reset_btn.clicked.connect(self._on_reset)
+        actions_layout.addWidget(self.reset_btn)
         
-        run_btn = QPushButton('Run')
-        run_btn.clicked.connect(self._on_run)
-        actions_layout.addWidget(run_btn)
+        self.run_btn = QPushButton(tr('run'))
+        self.run_btn.clicked.connect(self._on_run)
+        actions_layout.addWidget(self.run_btn)
         
         layout.addLayout(actions_layout)
         
@@ -255,9 +256,9 @@ class ManagerPanel(QWidget):
         self.build_widget = BuildConfigWidget()
         self.build_widget.setVisible(False)
         
-        build_toggle = QPushButton('Build ▼')
-        build_toggle.clicked.connect(lambda: self._toggle_section(self.build_widget, build_toggle, 'Build'))
-        layout.addWidget(build_toggle)
+        self.build_toggle = QPushButton(f'{tr("build")} ▼')
+        self.build_toggle.clicked.connect(lambda: self._toggle_section(self.build_widget, self.build_toggle, tr('build')))
+        layout.addWidget(self.build_toggle)
         layout.addWidget(self.build_widget)
         
         # Variable creation (collapsible)
@@ -265,14 +266,14 @@ class ManagerPanel(QWidget):
         self.create_var_widget.setVisible(False)
         self.create_var_widget.created.connect(self._refresh_variables)
         
-        create_var_toggle = QPushButton('Create Variable ▼')
-        create_var_toggle.clicked.connect(lambda: self._toggle_section(self.create_var_widget, create_var_toggle, 'Create Variable'))
-        layout.addWidget(create_var_toggle)
+        self.create_var_toggle = QPushButton(f'{tr("create_variable")} ▼')
+        self.create_var_toggle.clicked.connect(lambda: self._toggle_section(self.create_var_widget, self.create_var_toggle, tr('create_variable')))
+        layout.addWidget(self.create_var_toggle)
         layout.addWidget(self.create_var_widget)
         
         # Variables list
-        var_group = QGroupBox('Variables')
-        var_layout = QVBoxLayout(var_group)
+        self.var_group = QGroupBox(tr('variables'))
+        var_layout = QVBoxLayout(self.var_group)
         
         self.variables_list = QVBoxLayout()
         var_layout.addLayout(self.variables_list)
@@ -280,14 +281,31 @@ class ManagerPanel(QWidget):
         # Wrap in scroll area
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setWidget(var_group)
+        scroll.setWidget(self.var_group)
         layout.addWidget(scroll, 1)
         
-        # Connect to variable store
+        # Connect to variable store and settings
         VariableStore.get_instance().variable_changed.connect(self._refresh_variables)
+        SettingsStore.get_instance().language_changed.connect(self._update_labels)
         
         # Initial refresh
         self._refresh_variables()
+    
+    def _update_labels(self):
+        """Update labels when language changes."""
+        self.file_group.setTitle(tr('file'))
+        self.open_btn.setText(tr('open'))
+        self.save_btn.setText(tr('save'))
+        self.save_as_btn.setText(tr('save_as'))
+        self.reset_btn.setText(tr('reset'))
+        self.run_btn.setText(tr('run'))
+        self.build_toggle.setText(f'{tr("build")} {"▲" if self.build_widget.isVisible() else "▼"}')
+        self.create_var_toggle.setText(f'{tr("create_variable")} {"▲" if self.create_var_widget.isVisible() else "▼"}')
+        self.var_group.setTitle(tr('variables'))
+        if self._current_file:
+            self.file_label.setText(f'{tr("current_file")}: {self._current_file.split("/")[-1]}')
+        else:
+            self.file_label.setText(f'{tr("current_file")}: {tr("local_storage")}')
     
     def _toggle_section(self, widget: QWidget, button: QPushButton, name: str):
         """Toggle visibility of a collapsible section."""
@@ -319,21 +337,21 @@ class ManagerPanel(QWidget):
         """Handle open file."""
         file_name, _ = QFileDialog.getOpenFileName(
             self,
-            'Open Blueprint',
+            tr('open'),
             '',
             'JSON Files (*.json)'
         )
         
         if file_name:
             try:
-                with open(file_name, 'r') as f:
+                with open(file_name, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 
                 self._load_data(data)
                 self._current_file = file_name
-                self.file_label.setText(f'Current: {file_name.split("/")[-1]}')
+                self.file_label.setText(f'{tr("current_file")}: {file_name.split("/")[-1]}')
             except Exception as e:
-                QMessageBox.warning(self, 'Error', f'Failed to open file: {e}')
+                QMessageBox.warning(self, tr('error'), f'{tr("open_file_error")}: {e}')
     
     def _on_save(self):
         """Handle save file."""
@@ -346,7 +364,7 @@ class ManagerPanel(QWidget):
         """Handle save as."""
         file_name, _ = QFileDialog.getSaveFileName(
             self,
-            'Save Blueprint',
+            tr('save_as'),
             'blueprint.json',
             'JSON Files (*.json)'
         )
@@ -354,17 +372,17 @@ class ManagerPanel(QWidget):
         if file_name:
             self._save_to_file(file_name)
             self._current_file = file_name
-            self.file_label.setText(f'Current: {file_name.split("/")[-1]}')
+            self.file_label.setText(f'{tr("current_file")}: {file_name.split("/")[-1]}')
     
     def _save_to_file(self, file_name: str):
         """Save current state to file."""
         try:
             data = self._get_save_data()
-            with open(file_name, 'w') as f:
-                json.dump(data, f, indent=2)
-            QMessageBox.information(self, 'Success', 'Blueprint saved successfully')
+            with open(file_name, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            QMessageBox.information(self, tr('success'), tr('blueprint_saved'))
         except Exception as e:
-            QMessageBox.warning(self, 'Error', f'Failed to save file: {e}')
+            QMessageBox.warning(self, tr('error'), f'{tr("save_file_error")}: {e}')
     
     def _get_save_data(self) -> dict:
         """Get current state as saveable data."""
@@ -466,8 +484,8 @@ class ManagerPanel(QWidget):
         """Handle reset."""
         reply = QMessageBox.question(
             self,
-            'Confirm Reset',
-            'Are you sure you want to reset? All unsaved changes will be lost.',
+            tr('confirm_reset'),
+            tr('reset_warning'),
             QMessageBox.Yes | QMessageBox.No
         )
         
@@ -475,7 +493,7 @@ class ManagerPanel(QWidget):
             NodeStore.get_instance().reset_nodes()
             VariableStore.get_instance().clear_variables()
             self._current_file = None
-            self.file_label.setText('Current: Local Storage')
+            self.file_label.setText(f'{tr("current_file")}: {tr("local_storage")}')
     
     def _on_run(self):
         """Handle run - generate and display HOI4 MOD script code."""
@@ -486,6 +504,7 @@ class ManagerPanel(QWidget):
         try:
             code = compiler.generate()
             self.code_updated.emit(code)
-            QMessageBox.information(self, 'Generated MOD Script', f'MOD script generated successfully!\n\nPreview (first 500 chars):\n{code[:500]}...')
+            preview = code[:500] + '...' if len(code) > 500 else code
+            QMessageBox.information(self, tr('generated_mod_script'), f'{tr("generate_success")}\n\n{preview}')
         except Exception as e:
-            QMessageBox.warning(self, 'Error', f'Failed to generate MOD script: {e}')
+            QMessageBox.warning(self, tr('error'), f'{tr("generate_error")}: {e}')

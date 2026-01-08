@@ -19,6 +19,7 @@ from ..store.connection import ConnectionStore
 from ..store.variable import VariableStore
 from ..store.ui import UIStore
 from ..store.stage import StageStore
+from ..store.settings import SettingsStore, tr
 from ..utils.color import color
 from ..utils.consts import NODE_TITLE_HEIGHT, BEGIN_NODE_ID
 
@@ -751,16 +752,16 @@ class FlowEditorView(QGraphicsView):
         variable_store = VariableStore.get_instance()
         variables = variable_store.get_all_variables()
         if variables:
-            var_menu = menu.addMenu('Variables')
+            var_menu = menu.addMenu(tr('variables'))
             for var in variables:
                 var_submenu = var_menu.addMenu(var.name)
                 
-                get_action = var_submenu.addAction('Get')
+                get_action = var_submenu.addAction(tr('get_variable'))
                 get_action.triggered.connect(
                     lambda checked, v=var: self._create_var_node(event.pos(), v.name, True)
                 )
                 
-                set_action = var_submenu.addAction('Set')
+                set_action = var_submenu.addAction(tr('set_variable'))
                 set_action.triggered.connect(
                     lambda checked, v=var: self._create_var_node(event.pos(), v.name, False)
                 )

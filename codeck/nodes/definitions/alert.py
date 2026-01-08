@@ -1,4 +1,4 @@
-"""Alert node definition."""
+"""Alert node definition - Creates a news event popup in HOI4."""
 
 import json
 from PySide6.QtCore import QPointF
@@ -13,16 +13,16 @@ height = build_node_height(2)
 
 
 def alert_code_fn(node, build_pin_var_name, get_connection_input, get_connection_exec_output):
-    """Generate code for Alert node."""
+    """Generate code for Alert node in HOI4 script format - creates a news event."""
     message = get_connection_input('message')
     if message is None:
-        message = json.dumps(node.data.get('message', ''))
-    return f'alert({message});\n'
+        message = node.data.get('message', '')
+    return f'# Show news event with message\nnews_event = {{ id = news.1 }}\n'
 
 
 AlertNodeDefinition = CodeckNodeDefinition(
     name='alert',
-    label='Alert',
+    label='News Event',
     node_type='function',
     width=width,
     height=height,

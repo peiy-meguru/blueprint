@@ -1,4 +1,4 @@
-"""If node definition."""
+"""If node definition - Conditional branching for HOI4 MOD scripts."""
 
 from PySide6.QtCore import QPointF
 from ...store.node import CodeckNodeDefinition
@@ -13,20 +13,27 @@ height = build_node_height(2)
 
 
 def if_code_fn(node, build_pin_var_name, get_connection_input, get_connection_exec_output):
-    """Generate code for If node."""
+    """Generate code for If node in HOI4 script format."""
     condition = get_connection_input('condition')
     if condition is None:
-        condition = str(node.data.get('condition', False)).lower()
+        condition = str(node.data.get('condition', 'always = yes'))
     
-    true_branch = format_function_indent(get_connection_exec_output('true'), 2)
-    false_branch = format_function_indent(get_connection_exec_output('false'), 2)
+    true_branch = format_function_indent(get_connection_exec_output('true'), 1)
+    false_branch = format_function_indent(get_connection_exec_output('false'), 1)
     
-    return f'''if ({condition}) {{
-  {true_branch}
-}} else {{
-  {false_branch}
+    result = f'''if = {{
+    limit = {{ {condition} }}
+    {true_branch}
 }}
 '''
+    
+    if false_branch and false_branch.strip():
+        result += f'''else = {{
+    {false_branch}
+}}
+'''
+    
+    return result
 
 
 IfNodeDefinition = CodeckNodeDefinition(
@@ -38,7 +45,7 @@ IfNodeDefinition = CodeckNodeDefinition(
     category=DEFAULT_CORE_CATEGORY,
     inputs=[
         exec_pin_input(width),
-        port_pin_input('condition', width, 1, input_type='boolean')
+        port_pin_input('condition', width, 1, input_type='text')
     ],
     outputs=[
         exec_pin_output(width),

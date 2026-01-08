@@ -1,4 +1,4 @@
-"""Log node definition."""
+"""Log node definition - outputs debug information in HOI4 MOD script."""
 
 import json
 from PySide6.QtCore import QPointF
@@ -13,11 +13,11 @@ height = build_node_height(2)
 
 
 def log_code_fn(node, build_pin_var_name, get_connection_input, get_connection_exec_output):
-    """Generate code for Log node."""
+    """Generate code for Log node in HOI4 script format."""
     message = get_connection_input('message')
     if message is None:
-        message = json.dumps(node.data.get('message', ''))
-    return f'console.log({message});\n'
+        message = node.data.get('message', '')
+    return f'# Log: {message}\nlog = "{message}"\n'
 
 
 LogNodeDefinition = CodeckNodeDefinition(

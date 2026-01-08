@@ -1,4 +1,4 @@
-"""Code Editor - Display generated code."""
+"""Code Editor - Display generated HOI4 MOD script code."""
 
 from PySide6.QtWidgets import QPlainTextEdit, QWidget, QVBoxLayout, QLabel
 from PySide6.QtGui import QFont, QColor, QPalette, QSyntaxHighlighter, QTextCharFormat, QTextDocument
@@ -10,25 +10,46 @@ from ..store.variable import VariableStore
 from ..code.compiler import CodeCompiler
 
 
-class JavaScriptHighlighter(QSyntaxHighlighter):
-    """Syntax highlighter for JavaScript code."""
+class HOI4ScriptHighlighter(QSyntaxHighlighter):
+    """Syntax highlighter for HOI4 MOD script code."""
     
     def __init__(self, document: QTextDocument):
         super().__init__(document)
         
         self.highlighting_rules = []
         
-        # Keywords
+        # Keywords (HOI4 script commands)
         keyword_format = QTextCharFormat()
         keyword_format.setForeground(QColor('#569cd6'))
         keyword_format.setFontWeight(QFont.Bold)
         keywords = [
-            'const', 'let', 'var', 'function', 'return', 'if', 'else',
-            'for', 'while', 'do', 'switch', 'case', 'break', 'continue',
-            'try', 'catch', 'finally', 'throw', 'new', 'delete', 'typeof',
-            'instanceof', 'in', 'of', 'class', 'extends', 'import', 'export',
-            'from', 'as', 'default', 'async', 'await', 'yield', 'true', 'false',
-            'null', 'undefined', 'this'
+            'add_namespace', 'country_event', 'news_event', 'state_event',
+            'id', 'title', 'desc', 'picture', 'fire_only_once', 'is_triggered_only',
+            'trigger', 'mean_time_to_happen', 'immediate', 'option', 'hidden_effect',
+            'effect', 'ai_chance', 'factor', 'modifier', 'days', 'months', 'years',
+            'random', 'random_list', 'if', 'else', 'else_if', 'limit', 'NOT', 'OR', 'AND',
+            'set_variable', 'add_to_variable', 'subtract_from_variable', 'multiply_variable',
+            'divide_variable', 'check_variable', 'clamp_variable', 'round_variable',
+            'set_country_flag', 'has_country_flag', 'clr_country_flag',
+            'set_global_flag', 'has_global_flag', 'clr_global_flag',
+            'add_political_power', 'add_stability', 'add_war_support',
+            'add_manpower', 'add_equipment_to_stockpile', 'add_resource',
+            'create_unit', 'delete_unit', 'transfer_state', 'annex_country',
+            'declare_war_on', 'white_peace', 'add_opinion_modifier',
+            'country_lock_all_division_template', 'load_oob',
+            'set_politics', 'set_popularities', 'add_ideas', 'remove_ideas',
+            'add_tech_bonus', 'set_technology', 'add_research_slot',
+            'create_faction', 'add_to_faction', 'leave_faction',
+            'give_guarantee', 'give_military_access', 'recall_attache',
+            'focus_tree', 'national_focus', 'completion_reward', 'prerequisite',
+            'mutually_exclusive', 'available', 'bypass', 'cancel', 'historical_ai',
+            'ai_will_do', 'select_effect', 'complete_tooltip',
+            'decision', 'decision_category', 'allowed', 'visible', 'cost',
+            'days_remove', 'remove_effect', 'complete_effect', 'timeout_effect',
+            'idea', 'law', 'equipment_bonus', 'research_bonus',
+            'name', 'always', 'yes', 'no', 'tag', 'var', 'value', 'ROOT', 'FROM', 'PREV',
+            'every_country', 'random_country', 'every_state', 'random_state',
+            'every_owned_state', 'capital_scope', 'owner'
         ]
         for word in keywords:
             pattern = QRegularExpression(f'\\b{word}\\b')
@@ -38,34 +59,35 @@ class JavaScriptHighlighter(QSyntaxHighlighter):
         number_format = QTextCharFormat()
         number_format.setForeground(QColor('#b5cea8'))
         self.highlighting_rules.append(
-            (QRegularExpression(r'\b\d+\.?\d*\b'), number_format)
+            (QRegularExpression(r'\b-?\d+\.?\d*\b'), number_format)
         )
         
-        # Strings
+        # Strings (quoted text)
         string_format = QTextCharFormat()
         string_format.setForeground(QColor('#ce9178'))
         self.highlighting_rules.append(
             (QRegularExpression(r'"[^"]*"'), string_format)
         )
-        self.highlighting_rules.append(
-            (QRegularExpression(r"'[^']*'"), string_format)
-        )
-        self.highlighting_rules.append(
-            (QRegularExpression(r'`[^`]*`'), string_format)
-        )
         
-        # Comments
+        # Comments (# style)
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor('#6a9955'))
         self.highlighting_rules.append(
-            (QRegularExpression(r'//[^\n]*'), comment_format)
+            (QRegularExpression(r'#[^\n]*'), comment_format)
         )
         
-        # Functions
-        function_format = QTextCharFormat()
-        function_format.setForeground(QColor('#dcdcaa'))
+        # Localization keys (e.g., country_event.1.t)
+        loc_format = QTextCharFormat()
+        loc_format.setForeground(QColor('#dcdcaa'))
         self.highlighting_rules.append(
-            (QRegularExpression(r'\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*\()'), function_format)
+            (QRegularExpression(r'\b[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z0-9_.]+\b'), loc_format)
+        )
+        
+        # Tags and scopes (e.g., GER, ENG, SOV)
+        tag_format = QTextCharFormat()
+        tag_format.setForeground(QColor('#4ec9b0'))
+        self.highlighting_rules.append(
+            (QRegularExpression(r'\b[A-Z]{3}\b'), tag_format)
         )
     
     def highlightBlock(self, text: str):
@@ -78,7 +100,7 @@ class JavaScriptHighlighter(QSyntaxHighlighter):
 
 
 class CodeEditor(QWidget):
-    """Code editor widget for displaying generated JavaScript code."""
+    """Code editor widget for displaying generated HOI4 MOD script code."""
     
     def __init__(self):
         super().__init__()
@@ -87,7 +109,7 @@ class CodeEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         # Title bar
-        title = QLabel('Generated Code')
+        title = QLabel('Generated MOD Script')
         title.setStyleSheet('background-color: #333; color: white; padding: 5px;')
         layout.addWidget(title)
         
@@ -103,7 +125,7 @@ class CodeEditor(QWidget):
         self.editor.setPalette(palette)
         
         # Syntax highlighter
-        self.highlighter = JavaScriptHighlighter(self.editor.document())
+        self.highlighter = HOI4ScriptHighlighter(self.editor.document())
         
         layout.addWidget(self.editor)
         

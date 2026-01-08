@@ -130,7 +130,7 @@ class CreateVariableDialog(QWidget):
 
 
 class BuildConfigWidget(QWidget):
-    """Widget for build configuration."""
+    """Widget for build configuration for HOI4 MOD scripts."""
     
     def __init__(self):
         super().__init__()
@@ -138,46 +138,49 @@ class BuildConfigWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         
-        # Platform selection
-        platform_group = QGroupBox('Platform')
-        platform_layout = QHBoxLayout(platform_group)
-        self.platform_group = QButtonGroup(self)
+        # Script type selection
+        script_group = QGroupBox('Script Type')
+        script_layout = QHBoxLayout(script_group)
+        self.script_group = QButtonGroup(self)
         
-        self.web_radio = QRadioButton('Web')
-        self.web_radio.setChecked(True)
-        self.nodejs_radio = QRadioButton('Node.js')
+        self.event_radio = QRadioButton('Event')
+        self.event_radio.setChecked(True)
+        self.decision_radio = QRadioButton('Decision')
+        self.focus_radio = QRadioButton('Focus')
         
-        self.platform_group.addButton(self.web_radio)
-        self.platform_group.addButton(self.nodejs_radio)
-        platform_layout.addWidget(self.web_radio)
-        platform_layout.addWidget(self.nodejs_radio)
-        layout.addWidget(platform_group)
+        self.script_group.addButton(self.event_radio)
+        self.script_group.addButton(self.decision_radio)
+        self.script_group.addButton(self.focus_radio)
+        script_layout.addWidget(self.event_radio)
+        script_layout.addWidget(self.decision_radio)
+        script_layout.addWidget(self.focus_radio)
+        layout.addWidget(script_group)
         
-        # Module type selection
-        module_group = QGroupBox('Module Type')
-        module_layout = QHBoxLayout(module_group)
-        self.module_group = QButtonGroup(self)
-        
-        self.esm_radio = QRadioButton('ESModule')
-        self.esm_radio.setChecked(True)
-        self.cjs_radio = QRadioButton('CommonJS')
-        
-        self.module_group.addButton(self.esm_radio)
-        self.module_group.addButton(self.cjs_radio)
-        module_layout.addWidget(self.esm_radio)
-        module_layout.addWidget(self.cjs_radio)
-        layout.addWidget(module_group)
+        # Namespace input
+        namespace_layout = QHBoxLayout()
+        namespace_layout.addWidget(QLabel('Namespace:'))
+        self.namespace_input = QLineEdit('my_mod')
+        namespace_layout.addWidget(self.namespace_input)
+        layout.addLayout(namespace_layout)
         
         # Pack button
-        pack_btn = QPushButton('Pack')
+        pack_btn = QPushButton('Export MOD Script')
         pack_btn.clicked.connect(self._on_pack)
         layout.addWidget(pack_btn)
     
     def _on_pack(self):
         """Handle pack button click."""
         compiler = CodeCompiler()
-        compiler.module_type = 'esmodule' if self.esm_radio.isChecked() else 'commonjs'
-        compiler.use_skypack = self.web_radio.isChecked()
+        
+        # Set script type
+        if self.event_radio.isChecked():
+            compiler.script_type = 'event'
+        elif self.decision_radio.isChecked():
+            compiler.script_type = 'decision'
+        else:
+            compiler.script_type = 'national_focus'
+        
+        compiler.mod_namespace = self.namespace_input.text().strip() or 'my_mod'
         
         try:
             code = compiler.generate()
@@ -185,17 +188,17 @@ class BuildConfigWidget(QWidget):
             # Save to file
             file_name, _ = QFileDialog.getSaveFileName(
                 self,
-                'Save Generated Code',
-                'generated.js',
-                'JavaScript Files (*.js)'
+                'Save MOD Script',
+                f'{compiler.mod_namespace}_{compiler.script_type}.txt',
+                'HOI4 Script Files (*.txt);;All Files (*)'
             )
             
             if file_name:
-                with open(file_name, 'w') as f:
+                with open(file_name, 'w', encoding='utf-8') as f:
                     f.write(code)
-                QMessageBox.information(self, 'Success', f'Code saved to {file_name}')
+                QMessageBox.information(self, 'Success', f'MOD script saved to {file_name}')
         except Exception as e:
-            QMessageBox.warning(self, 'Error', f'Failed to generate code: {e}')
+            QMessageBox.warning(self, 'Error', f'Failed to generate MOD script: {e}')
 
 
 class ManagerPanel(QWidget):
@@ -475,13 +478,14 @@ class ManagerPanel(QWidget):
             self.file_label.setText('Current: Local Storage')
     
     def _on_run(self):
-        """Handle run - generate and display code."""
+        """Handle run - generate and display HOI4 MOD script code."""
         compiler = CodeCompiler()
-        compiler.use_skypack = True
+        compiler.script_type = 'event'
+        compiler.mod_namespace = 'my_mod'
         
         try:
             code = compiler.generate()
             self.code_updated.emit(code)
-            QMessageBox.information(self, 'Generated Code', f'Code generated successfully!\n\nPreview (first 500 chars):\n{code[:500]}...')
+            QMessageBox.information(self, 'Generated MOD Script', f'MOD script generated successfully!\n\nPreview (first 500 chars):\n{code[:500]}...')
         except Exception as e:
-            QMessageBox.warning(self, 'Error', f'Failed to generate code: {e}')
+            QMessageBox.warning(self, 'Error', f'Failed to generate MOD script: {e}')

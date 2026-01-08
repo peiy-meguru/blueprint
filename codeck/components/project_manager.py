@@ -35,33 +35,34 @@ class ProjectCard(QFrame):
         super().__init__()
         self.project = project
         
-        self.setFixedSize(300, 120)
+        self.setMinimumSize(280, 100)
+        self.setMaximumHeight(120)
         self.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
         self.setCursor(Qt.PointingHandCursor)
         
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(15)
         
-        # Project image
+        # Project image/icon
         image_label = QLabel()
-        image_label.setFixedSize(80, 80)
+        image_label.setFixedSize(60, 60)
         image_label.setAlignment(Qt.AlignCenter)
         
         if project.image_path and os.path.exists(project.image_path):
             pixmap = QPixmap(project.image_path)
-            pixmap = pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             image_label.setPixmap(pixmap)
         else:
-            # Default placeholder
-            image_label.setText('MOD')
+            # Default placeholder with icon-like appearance
+            image_label.setText('📁')
             image_label.setStyleSheet('''
                 QLabel {
                     background-color: #3c3c3c;
                     border: 1px solid #555;
-                    border-radius: 4px;
+                    border-radius: 8px;
                     color: #888;
-                    font-size: 14px;
+                    font-size: 24px;
                 }
             ''')
         
@@ -70,6 +71,7 @@ class ProjectCard(QFrame):
         # Project info
         info_layout = QVBoxLayout()
         info_layout.setSpacing(4)
+        info_layout.setContentsMargins(0, 0, 0, 0)
         
         # Name
         name_label = QLabel(project.name or os.path.basename(project.path))
@@ -77,15 +79,16 @@ class ProjectCard(QFrame):
         name_label.setWordWrap(True)
         info_layout.addWidget(name_label)
         
-        # Description
+        # Description or path
         if project.description:
-            desc_label = QLabel(project.description[:50] + '...' if len(project.description) > 50 else project.description)
-            desc_label.setStyleSheet('color: #888;')
+            desc_text = project.description[:40] + '...' if len(project.description) > 40 else project.description
+            desc_label = QLabel(desc_text)
+            desc_label.setStyleSheet('color: #888; font-size: 11px;')
             desc_label.setWordWrap(True)
             info_layout.addWidget(desc_label)
         
-        # Path
-        path_label = QLabel(self._truncate_path(project.path))
+        # Path (truncated)
+        path_label = QLabel(self._truncate_path(project.path, 30))
         path_label.setStyleSheet('color: #666; font-size: 10px;')
         info_layout.addWidget(path_label)
         
@@ -265,73 +268,103 @@ class ProjectManager(QWidget):
         settings.language_changed.connect(self._update_labels)
     
     def _setup_ui(self):
-        """Set up the user interface."""
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(40, 40, 40, 40)
-        layout.setSpacing(30)
+        """Set up the user interface with modern horizontal layout."""
+        # Main horizontal layout
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
-        # Title
+        # ===== Left Sidebar =====
+        left_panel = QFrame()
+        left_panel.setObjectName('leftPanel')
+        left_panel.setFixedWidth(280)
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(30, 40, 30, 40)
+        left_layout.setSpacing(20)
+        
+        # App logo/title in sidebar
         self.title_label = QLabel(tr('app_title'))
-        self.title_label.setFont(_get_font(24, bold=True))
-        self.title_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.title_label)
+        self.title_label.setFont(_get_font(16, bold=True))
+        self.title_label.setWordWrap(True)
+        self.title_label.setAlignment(Qt.AlignLeft)
+        left_layout.addWidget(self.title_label)
         
-        # Action buttons
-        action_layout = QHBoxLayout()
-        action_layout.setSpacing(20)
-        action_layout.addStretch()
+        # Separator line
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        separator.setObjectName('separator')
+        left_layout.addWidget(separator)
         
-        self.new_btn = QPushButton(tr('new_project'))
-        self.new_btn.setFixedSize(150, 50)
+        # Action buttons - vertically arranged
+        self.new_btn = QPushButton('  ' + tr('new_project'))
+        self.new_btn.setFixedHeight(45)
         self.new_btn.setFont(_get_font(12))
+        self.new_btn.setCursor(Qt.PointingHandCursor)
         self.new_btn.clicked.connect(self._on_new_project)
-        action_layout.addWidget(self.new_btn)
+        left_layout.addWidget(self.new_btn)
         
-        self.open_btn = QPushButton(tr('open_project'))
-        self.open_btn.setFixedSize(150, 50)
+        self.open_btn = QPushButton('  ' + tr('open_project'))
+        self.open_btn.setFixedHeight(45)
         self.open_btn.setFont(_get_font(12))
+        self.open_btn.setCursor(Qt.PointingHandCursor)
         self.open_btn.clicked.connect(self._on_open_project)
-        action_layout.addWidget(self.open_btn)
+        left_layout.addWidget(self.open_btn)
         
-        self.settings_btn = QPushButton(tr('settings'))
-        self.settings_btn.setFixedSize(100, 50)
+        self.settings_btn = QPushButton('  ' + tr('settings'))
+        self.settings_btn.setFixedHeight(45)
         self.settings_btn.setFont(_get_font(12))
+        self.settings_btn.setCursor(Qt.PointingHandCursor)
         self.settings_btn.clicked.connect(self._on_settings)
-        action_layout.addWidget(self.settings_btn)
+        left_layout.addWidget(self.settings_btn)
         
-        action_layout.addStretch()
-        layout.addLayout(action_layout)
+        left_layout.addStretch()
         
-        # Recent projects section
+        # Version info at bottom
+        version_label = QLabel('v1.0.0')
+        version_label.setStyleSheet('color: #666; font-size: 11px;')
+        version_label.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(version_label)
+        
+        main_layout.addWidget(left_panel)
+        
+        # ===== Right Panel - Recent Projects =====
+        right_panel = QFrame()
+        right_panel.setObjectName('rightPanel')
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(40, 40, 40, 40)
+        right_layout.setSpacing(20)
+        
+        # Recent projects header
         self.recent_label = QLabel(tr('recent_projects'))
-        self.recent_label.setFont(_get_font(14, bold=True))
-        layout.addWidget(self.recent_label)
+        self.recent_label.setFont(_get_font(18, bold=True))
+        right_layout.addWidget(self.recent_label)
         
-        # Horizontal scroll area for recent projects
+        # Scroll area for recent projects - grid layout
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll_area.setMinimumHeight(150)
-        self.scroll_area.setMaximumHeight(180)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll_area.setObjectName('projectsScrollArea')
         
         self.projects_widget = QWidget()
-        self.projects_layout = QHBoxLayout(self.projects_widget)
-        self.projects_layout.setContentsMargins(0, 0, 0, 0)
+        self.projects_widget.setObjectName('projectsWidget')
+        self.projects_layout = QGridLayout(self.projects_widget)
+        self.projects_layout.setContentsMargins(0, 0, 10, 0)
         self.projects_layout.setSpacing(15)
-        self.projects_layout.setAlignment(Qt.AlignLeft)
+        self.projects_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         
         self.scroll_area.setWidget(self.projects_widget)
-        layout.addWidget(self.scroll_area)
+        right_layout.addWidget(self.scroll_area, 1)
         
-        # No recent projects label
+        # No recent projects label (centered in the scroll area)
         self.no_projects_label = QLabel(tr('no_recent_projects'))
         self.no_projects_label.setAlignment(Qt.AlignCenter)
+        self.no_projects_label.setFont(_get_font(14))
         self.no_projects_label.setStyleSheet('color: #666;')
         self.no_projects_label.hide()
-        layout.addWidget(self.no_projects_label)
+        right_layout.addWidget(self.no_projects_label, 1)
         
-        layout.addStretch()
+        main_layout.addWidget(right_panel, 1)
     
     def _apply_style(self):
         """Apply styling based on current theme."""
@@ -343,34 +376,53 @@ class ProjectManager(QWidget):
                     background-color: #1e1e1e;
                     color: #cccccc;
                 }
+                QFrame#leftPanel {
+                    background-color: #252526;
+                    border-right: 1px solid #3c3c3c;
+                }
+                QFrame#rightPanel {
+                    background-color: #1e1e1e;
+                }
+                QFrame#separator {
+                    background-color: #3c3c3c;
+                    max-height: 1px;
+                }
                 QPushButton {
-                    background-color: #0e639c;
+                    background-color: transparent;
                     border: none;
-                    padding: 10px 20px;
-                    border-radius: 4px;
-                    color: white;
+                    padding: 12px 15px;
+                    border-radius: 6px;
+                    color: #cccccc;
+                    text-align: left;
                 }
                 QPushButton:hover {
-                    background-color: #1177bb;
+                    background-color: #3c3c3c;
                 }
                 QPushButton:pressed {
-                    background-color: #0d5085;
+                    background-color: #0e639c;
                 }
-                QScrollArea {
+                QScrollArea#projectsScrollArea {
                     border: none;
                     background-color: transparent;
                 }
-                QScrollBar:horizontal {
+                QWidget#projectsWidget {
+                    background-color: transparent;
+                }
+                QScrollBar:vertical {
                     background-color: #1e1e1e;
-                    height: 10px;
+                    width: 10px;
+                    border-radius: 5px;
                 }
-                QScrollBar::handle:horizontal {
+                QScrollBar::handle:vertical {
                     background-color: #555;
-                    min-width: 20px;
-                    border-radius: 4px;
+                    min-height: 30px;
+                    border-radius: 5px;
                 }
-                QScrollBar::handle:horizontal:hover {
+                QScrollBar::handle:vertical:hover {
                     background-color: #666;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    height: 0px;
                 }
             ''')
         else:
@@ -379,43 +431,63 @@ class ProjectManager(QWidget):
                     background-color: #f5f5f5;
                     color: #333333;
                 }
+                QFrame#leftPanel {
+                    background-color: #ffffff;
+                    border-right: 1px solid #e0e0e0;
+                }
+                QFrame#rightPanel {
+                    background-color: #f5f5f5;
+                }
+                QFrame#separator {
+                    background-color: #e0e0e0;
+                    max-height: 1px;
+                }
                 QPushButton {
-                    background-color: #0078d4;
+                    background-color: transparent;
                     border: none;
-                    padding: 10px 20px;
-                    border-radius: 4px;
-                    color: white;
+                    padding: 12px 15px;
+                    border-radius: 6px;
+                    color: #333333;
+                    text-align: left;
                 }
                 QPushButton:hover {
-                    background-color: #1c88db;
+                    background-color: #e8e8e8;
                 }
                 QPushButton:pressed {
-                    background-color: #005a9e;
+                    background-color: #0078d4;
+                    color: white;
                 }
-                QScrollArea {
+                QScrollArea#projectsScrollArea {
                     border: none;
                     background-color: transparent;
                 }
-                QScrollBar:horizontal {
+                QWidget#projectsWidget {
+                    background-color: transparent;
+                }
+                QScrollBar:vertical {
                     background-color: #f5f5f5;
-                    height: 10px;
+                    width: 10px;
+                    border-radius: 5px;
                 }
-                QScrollBar::handle:horizontal {
+                QScrollBar::handle:vertical {
                     background-color: #ccc;
-                    min-width: 20px;
-                    border-radius: 4px;
+                    min-height: 30px;
+                    border-radius: 5px;
                 }
-                QScrollBar::handle:horizontal:hover {
+                QScrollBar::handle:vertical:hover {
                     background-color: #bbb;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    height: 0px;
                 }
             ''')
     
     def _update_labels(self):
         """Update labels when language changes."""
         self.title_label.setText(tr('app_title'))
-        self.new_btn.setText(tr('new_project'))
-        self.open_btn.setText(tr('open_project'))
-        self.settings_btn.setText(tr('settings'))
+        self.new_btn.setText('  ' + tr('new_project'))
+        self.open_btn.setText('  ' + tr('open_project'))
+        self.settings_btn.setText('  ' + tr('settings'))
         self.recent_label.setText(tr('recent_projects'))
         self.no_projects_label.setText(tr('no_recent_projects'))
     
@@ -438,13 +510,14 @@ class ProjectManager(QWidget):
             self.no_projects_label.hide()
             self.scroll_area.show()
             
-            for project in projects:
+            # Add cards in a grid layout (2 columns)
+            cols = 2
+            for idx, project in enumerate(projects):
                 card = ProjectCard(project)
                 card.clicked.connect(self._on_project_clicked)
-                self.projects_layout.addWidget(card)
-            
-            # Add stretch at the end
-            self.projects_layout.addStretch()
+                row = idx // cols
+                col = idx % cols
+                self.projects_layout.addWidget(card, row, col)
     
     def _on_new_project(self):
         """Handle new project button click."""

@@ -220,100 +220,286 @@ class SettingsStore(QObject):
 # Translations dictionary
 TRANSLATIONS = {
     'zh_CN': {
+        # Application
         'app_title': 'Codeck - HOI4 MOD 可视化编程',
+        'version': '版本',
+        
+        # Menu - File
+        'file': '文件',
         'new_project': '新建项目',
         'open_project': '打开项目',
+        'open': '打开',
+        'save': '保存',
+        'save_as': '另存为',
         'recent_projects': '最近项目',
+        'exit': '退出',
+        
+        # Menu - Edit
+        'edit': '编辑',
+        'reset': '重置',
+        'undo': '撤销',
+        'redo': '重做',
+        'cut': '剪切',
+        'copy': '复制',
+        'paste': '粘贴',
+        'select_all': '全选',
+        
+        # Menu - View
+        'view': '视图',
+        'zoom_in': '放大',
+        'zoom_out': '缩小',
+        'fit_to_window': '适应窗口',
+        'focus_nodes': '聚焦节点',
+        
+        # Menu - Help
+        'help': '帮助',
+        'about': '关于',
+        'documentation': '文档',
+        'keyboard_shortcuts': '键盘快捷键',
+        
+        # Settings
         'settings': '设置',
         'language': '语言',
         'theme': '界面风格',
         'dark_theme': '深色主题',
         'light_theme': '浅色主题',
-        'file': '文件',
-        'edit': '编辑',
-        'help': '帮助',
-        'save': '保存',
-        'save_as': '另存为',
-        'open': '打开',
-        'reset': '重置',
-        'run': '运行',
-        'pack': '打包',
-        'variables': '变量',
-        'create_variable': '创建变量',
-        'delete': '删除',
-        'name': '名称',
-        'type': '类型',
-        'default': '默认值',
+        'chinese': '中文',
+        'english': 'English',
+        'apply': '应用',
+        'cancel': '取消',
+        'ok': '确定',
+        
+        # Project
+        'project_info': '项目信息',
+        'project_path': '项目路径',
+        'browse': '浏览',
+        'no_recent_projects': '暂无最近项目',
+        'project_not_found': '项目文件未找到',
+        'mod_name_required': 'MOD名称是必填项',
+        'project_path_required': '项目路径是必填项',
+        
+        # MOD
         'mod_name': 'MOD 名称',
         'mod_description': 'MOD 描述',
         'mod_image': 'MOD 图片',
-        'generated_code': '生成的脚本',
-        'no_recent_projects': '暂无最近项目',
-        'project_info': '项目信息',
+        'namespace': '命名空间',
+        
+        # Build
         'build': '构建',
-        'platform': '平台',
-        'module_type': '模块类型',
+        'run': '运行',
+        'pack': '打包',
+        'export': '导出',
+        'export_mod_script': '导出 MOD 脚本',
+        'script_type': '脚本类型',
+        'event': '事件',
+        'decision': '决议',
+        'focus': '国策',
+        'idea': '国家精神',
+        
+        # Variables
+        'variables': '变量',
+        'create_variable': '创建变量',
+        'delete_variable': '删除变量',
+        'variable_name': '变量名',
+        'variable_name_placeholder': '请输入变量名',
+        'variable_name_required': '变量名是必填项',
+        'variable_name_invalid': '变量名必须以字母或下划线开头',
+        'variable_exists': '变量已存在',
+        
+        # Common labels
+        'name': '名称',
+        'type': '类型',
+        'default': '默认值',
+        'default_optional': '默认值（可选）',
+        'value': '值',
+        'delete': '删除',
+        'confirm': '确认',
+        
+        # File operations
         'current_file': '当前文件',
         'local_storage': '本地存储',
+        'blueprint_saved': '蓝图保存成功',
+        'file_saved_to': '文件已保存到',
+        'open_file_error': '打开文件失败',
+        'save_file_error': '保存文件失败',
+        'load_project_error': '加载项目失败',
+        'save_project_error': '保存项目失败',
+        
+        # Code generation
+        'generated_code': '生成的脚本',
+        'generated_mod_script': '生成的 MOD 脚本',
+        'code_saved': '代码已保存到',
+        'generate_success': 'MOD 脚本生成成功！',
+        'generate_error': '生成 MOD 脚本失败',
+        
+        # Dialogs
         'confirm_reset': '确认重置',
         'reset_warning': '确定要重置吗？所有未保存的更改将会丢失。',
         'error': '错误',
         'success': '成功',
-        'code_saved': '代码已保存到',
-        'blueprint_saved': '蓝图保存成功',
-        'chinese': '中文',
-        'english': 'English',
-        'mod_name_required': 'MOD名称是必填项',
-        'project_path_required': '项目路径是必填项',
-        'project_not_found': '项目文件未找到',
+        'warning': '警告',
+        'info': '提示',
+        
+        # Platform
+        'platform': '平台',
+        'module_type': '模块类型',
+        
+        # Nodes
+        'nodes': '节点',
+        'core_nodes': '核心节点',
+        'logic_nodes': '逻辑节点',
+        'variable_nodes': '变量节点',
+        'get_variable': '获取变量',
+        'set_variable': '设置变量',
+        
+        # Flow editor context menu
+        'add_node': '添加节点',
+        
+        # Error messages
+        'invalid_blueprint_format': '无效的蓝图格式',
+        'no_begin_node': '未找到开始节点',
+        'multiple_begin_nodes': '存在多个开始节点',
     },
     'en_US': {
+        # Application
         'app_title': 'Codeck - HOI4 MOD Visual Programming',
+        'version': 'Version',
+        
+        # Menu - File
+        'file': 'File',
         'new_project': 'New Project',
         'open_project': 'Open Project',
+        'open': 'Open',
+        'save': 'Save',
+        'save_as': 'Save As',
         'recent_projects': 'Recent Projects',
+        'exit': 'Exit',
+        
+        # Menu - Edit
+        'edit': 'Edit',
+        'reset': 'Reset',
+        'undo': 'Undo',
+        'redo': 'Redo',
+        'cut': 'Cut',
+        'copy': 'Copy',
+        'paste': 'Paste',
+        'select_all': 'Select All',
+        
+        # Menu - View
+        'view': 'View',
+        'zoom_in': 'Zoom In',
+        'zoom_out': 'Zoom Out',
+        'fit_to_window': 'Fit to Window',
+        'focus_nodes': 'Focus Nodes',
+        
+        # Menu - Help
+        'help': 'Help',
+        'about': 'About',
+        'documentation': 'Documentation',
+        'keyboard_shortcuts': 'Keyboard Shortcuts',
+        
+        # Settings
         'settings': 'Settings',
         'language': 'Language',
         'theme': 'Interface Style',
         'dark_theme': 'Dark Theme',
         'light_theme': 'Light Theme',
-        'file': 'File',
-        'edit': 'Edit',
-        'help': 'Help',
-        'save': 'Save',
-        'save_as': 'Save As',
-        'open': 'Open',
-        'reset': 'Reset',
-        'run': 'Run',
-        'pack': 'Pack',
-        'variables': 'Variables',
-        'create_variable': 'Create Variable',
-        'delete': 'Delete',
-        'name': 'Name',
-        'type': 'Type',
-        'default': 'Default',
+        'chinese': '中文',
+        'english': 'English',
+        'apply': 'Apply',
+        'cancel': 'Cancel',
+        'ok': 'OK',
+        
+        # Project
+        'project_info': 'Project Info',
+        'project_path': 'Project Path',
+        'browse': 'Browse',
+        'no_recent_projects': 'No Recent Projects',
+        'project_not_found': 'Project file not found',
+        'mod_name_required': 'MOD name is required',
+        'project_path_required': 'Project path is required',
+        
+        # MOD
         'mod_name': 'MOD Name',
         'mod_description': 'MOD Description',
         'mod_image': 'MOD Image',
-        'generated_code': 'Generated Script',
-        'no_recent_projects': 'No Recent Projects',
-        'project_info': 'Project Info',
+        'namespace': 'Namespace',
+        
+        # Build
         'build': 'Build',
-        'platform': 'Platform',
-        'module_type': 'Module Type',
+        'run': 'Run',
+        'pack': 'Pack',
+        'export': 'Export',
+        'export_mod_script': 'Export MOD Script',
+        'script_type': 'Script Type',
+        'event': 'Event',
+        'decision': 'Decision',
+        'focus': 'Focus',
+        'idea': 'Idea',
+        
+        # Variables
+        'variables': 'Variables',
+        'create_variable': 'Create Variable',
+        'delete_variable': 'Delete Variable',
+        'variable_name': 'Variable Name',
+        'variable_name_placeholder': 'Enter variable name',
+        'variable_name_required': 'Variable name is required',
+        'variable_name_invalid': 'Variable name must start with a letter or underscore',
+        'variable_exists': 'Variable already exists',
+        
+        # Common labels
+        'name': 'Name',
+        'type': 'Type',
+        'default': 'Default',
+        'default_optional': 'Default (optional)',
+        'value': 'Value',
+        'delete': 'Delete',
+        'confirm': 'Confirm',
+        
+        # File operations
         'current_file': 'Current File',
         'local_storage': 'Local Storage',
+        'blueprint_saved': 'Blueprint saved successfully',
+        'file_saved_to': 'File saved to',
+        'open_file_error': 'Failed to open file',
+        'save_file_error': 'Failed to save file',
+        'load_project_error': 'Failed to load project',
+        'save_project_error': 'Failed to save project',
+        
+        # Code generation
+        'generated_code': 'Generated Script',
+        'generated_mod_script': 'Generated MOD Script',
+        'code_saved': 'Code saved to',
+        'generate_success': 'MOD script generated successfully!',
+        'generate_error': 'Failed to generate MOD script',
+        
+        # Dialogs
         'confirm_reset': 'Confirm Reset',
         'reset_warning': 'Are you sure you want to reset? All unsaved changes will be lost.',
         'error': 'Error',
         'success': 'Success',
-        'code_saved': 'Code saved to',
-        'blueprint_saved': 'Blueprint saved successfully',
-        'chinese': '中文',
-        'english': 'English',
-        'mod_name_required': 'MOD name is required',
-        'project_path_required': 'Project path is required',
-        'project_not_found': 'Project file not found',
+        'warning': 'Warning',
+        'info': 'Information',
+        
+        # Platform
+        'platform': 'Platform',
+        'module_type': 'Module Type',
+        
+        # Nodes
+        'nodes': 'Nodes',
+        'core_nodes': 'Core Nodes',
+        'logic_nodes': 'Logic Nodes',
+        'variable_nodes': 'Variable Nodes',
+        'get_variable': 'Get Variable',
+        'set_variable': 'Set Variable',
+        
+        # Flow editor context menu
+        'add_node': 'Add Node',
+        
+        # Error messages
+        'invalid_blueprint_format': 'Invalid blueprint format',
+        'no_begin_node': 'No Begin node found',
+        'multiple_begin_nodes': 'Multiple Begin nodes found',
     }
 }
 

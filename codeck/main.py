@@ -424,9 +424,9 @@ class MainWindow(QMainWindow):
             
             self._load_data(data)
             self.manager_panel._current_file = path
-            self.manager_panel.file_label.setText(f'Current: {path.split("/")[-1]}')
+            self.manager_panel.file_label.setText(f'{tr("current_file")}: {path.split("/")[-1]}')
         except Exception as e:
-            QMessageBox.warning(self, tr('error'), f'Failed to load project: {e}')
+            QMessageBox.warning(self, tr('error'), f'{tr("load_project_error")}: {e}')
     
     def _save_project(self, path: str):
         """Save project to file."""
@@ -436,9 +436,9 @@ class MainWindow(QMainWindow):
                 json.dump(data, f, indent=2, ensure_ascii=False)
             
             self.manager_panel._current_file = path
-            self.manager_panel.file_label.setText(f'Current: {path.split("/")[-1]}')
+            self.manager_panel.file_label.setText(f'{tr("current_file")}: {path.split("/")[-1]}')
         except Exception as e:
-            QMessageBox.warning(self, tr('error'), f'Failed to save project: {e}')
+            QMessageBox.warning(self, tr('error'), f'{tr("save_project_error")}: {e}')
     
     def _load_data(self, data: dict):
         """Load state from saved data."""

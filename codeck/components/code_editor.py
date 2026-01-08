@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QRegularExpression
 from ..store.node import NodeStore
 from ..store.connection import ConnectionStore
 from ..store.variable import VariableStore
+from ..store.settings import SettingsStore, tr
 from ..code.compiler import CodeCompiler
 
 
@@ -109,9 +110,9 @@ class CodeEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         # Title bar
-        title = QLabel('Generated MOD Script')
-        title.setStyleSheet('background-color: #333; color: white; padding: 5px;')
-        layout.addWidget(title)
+        self.title_label = QLabel(tr('generated_mod_script'))
+        self.title_label.setStyleSheet('background-color: #333; color: white; padding: 5px;')
+        layout.addWidget(self.title_label)
         
         # Code display
         self.editor = QPlainTextEdit()
@@ -140,11 +141,35 @@ class CodeEditor(QWidget):
         node_store = NodeStore.get_instance()
         connection_store = ConnectionStore.get_instance()
         variable_store = VariableStore.get_instance()
+        settings_store = SettingsStore.get_instance()
         
         node_store.nodes_changed.connect(self._update_code)
         node_store.node_data_changed.connect(self._update_code)
         connection_store.connections_changed.connect(self._update_code)
         variable_store.variable_changed.connect(self._update_code)
+        settings_store.language_changed.connect(self._update_labels)
+        settings_store.theme_changed.connect(self._apply_theme)
+    
+    def _update_labels(self):
+        """Update labels when language changes."""
+        self.title_label.setText(tr('generated_mod_script'))
+    
+    def _apply_theme(self):
+        """Apply theme to the code editor."""
+        settings = SettingsStore.get_instance()
+        
+        if settings.theme == 'dark':
+            self.title_label.setStyleSheet('background-color: #333; color: white; padding: 5px;')
+            palette = self.editor.palette()
+            palette.setColor(QPalette.Base, QColor('#1e1e1e'))
+            palette.setColor(QPalette.Text, QColor('#d4d4d4'))
+            self.editor.setPalette(palette)
+        else:
+            self.title_label.setStyleSheet('background-color: #e0e0e0; color: #333; padding: 5px;')
+            palette = self.editor.palette()
+            palette.setColor(QPalette.Base, QColor('#ffffff'))
+            palette.setColor(QPalette.Text, QColor('#333333'))
+            self.editor.setPalette(palette)
     
     def _update_code(self):
         """Update the displayed code."""

@@ -67,7 +67,7 @@ class CodeCompiler:
                     return self._build_pin_var_name(pin_name, node_id or node.id)
                 
                 if self.print_comment:
-                    code_text += f'// {node.id} (node: {definition.name})\n'
+                    code_text += f'# {node.id} (node: {definition.name})\n'
                 
                 code_text += code_fn(
                     node=node,

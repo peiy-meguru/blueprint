@@ -20,14 +20,23 @@ def loop_code_fn(node, build_pin_var_name, get_connection_input, get_connection_
     """
     count = get_connection_input('count')
     if count is None:
-        count = str(node.data.get('count', 1))
+        count = node.data.get('count', 0)
+    
+    # Convert to int for comparison, handle edge case of count <= 0
+    try:
+        count_int = int(count)
+    except (ValueError, TypeError):
+        count_int = 0
+    
+    if count_int <= 0:
+        return '# Loop skipped (count = 0)\n'
     
     body = format_function_indent(get_connection_exec_output('body'), 1)
     
-    # HOI4 doesn't have traditional loops, use every_country as an example
-    return f'''# Loop {count} times (using random_list)
+    # HOI4 doesn't have traditional loops, use random_list as an example
+    return f'''# Loop {count_int} times (using random_list)
 random_list = {{
-    {count} = {{
+    {count_int} = {{
         {body}
     }}
 }}

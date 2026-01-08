@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field
 from typing import Literal, Optional
 from PySide6.QtCore import QObject, Signal
@@ -41,9 +42,27 @@ class SettingsStore(QObject):
     
     _instance: Optional['SettingsStore'] = None
     
-    # Settings file path
-    SETTINGS_FILE = os.path.expanduser('~/.codeck_settings.json')
+    # Settings file path - use platform-appropriate config directory
     MAX_RECENT_PROJECTS = 10
+    
+    @staticmethod
+    def _get_config_dir() -> str:
+        """Get platform-appropriate configuration directory."""
+        if sys.platform == 'win32':
+            config_dir = os.environ.get('APPDATA', os.path.expanduser('~'))
+        elif sys.platform == 'darwin':
+            config_dir = os.path.expanduser('~/Library/Application Support')
+        else:
+            config_dir = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
+        
+        codeck_dir = os.path.join(config_dir, 'codeck')
+        os.makedirs(codeck_dir, exist_ok=True)
+        return codeck_dir
+    
+    @property
+    def settings_file(self) -> str:
+        """Get settings file path."""
+        return os.path.join(self._get_config_dir(), 'settings.json')
     
     def __new__(cls):
         if cls._instance is None:
@@ -67,11 +86,11 @@ class SettingsStore(QObject):
     
     def _load_settings(self) -> None:
         """Load settings from file."""
-        if not os.path.exists(self.SETTINGS_FILE):
+        if not os.path.exists(self.settings_file):
             return
         
         try:
-            with open(self.SETTINGS_FILE, 'r', encoding='utf-8') as f:
+            with open(self.settings_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             self._settings.language = data.get('language', 'zh_CN')
@@ -112,7 +131,7 @@ class SettingsStore(QObject):
                 ]
             }
             
-            with open(self.SETTINGS_FILE, 'w', encoding='utf-8') as f:
+            with open(self.settings_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except IOError as e:
             print(f'Warning: Failed to save settings: {e}')
@@ -244,6 +263,9 @@ TRANSLATIONS = {
         'blueprint_saved': '蓝图保存成功',
         'chinese': '中文',
         'english': 'English',
+        'mod_name_required': 'MOD名称是必填项',
+        'project_path_required': '项目路径是必填项',
+        'project_not_found': '项目文件未找到',
     },
     'en_US': {
         'app_title': 'Codeck - HOI4 MOD Visual Programming',
@@ -289,6 +311,9 @@ TRANSLATIONS = {
         'blueprint_saved': 'Blueprint saved successfully',
         'chinese': '中文',
         'english': 'English',
+        'mod_name_required': 'MOD name is required',
+        'project_path_required': 'Project path is required',
+        'project_not_found': 'Project file not found',
     }
 }
 

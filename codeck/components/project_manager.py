@@ -216,11 +216,11 @@ class NewProjectDialog(QDialog):
         path = self.path_input.text().strip()
         
         if not name:
-            QMessageBox.warning(self, tr('error'), 'MOD name is required')
+            QMessageBox.warning(self, tr('error'), tr('mod_name_required'))
             return
         
         if not path:
-            QMessageBox.warning(self, tr('error'), 'Project path is required')
+            QMessageBox.warning(self, tr('error'), tr('project_path_required'))
             return
         
         self.accept()
@@ -475,7 +475,7 @@ class ProjectManager(QWidget):
             QMessageBox.warning(
                 self,
                 tr('error'),
-                f'Project file not found: {path}'
+                f'{tr("project_not_found")}: {path}'
             )
             return
         
